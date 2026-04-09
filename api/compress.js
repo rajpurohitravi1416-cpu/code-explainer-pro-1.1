@@ -10,29 +10,26 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'No code provided' });
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'HTTP-Referer': 'https://code-explainer-pro.vercel.app', // optional
+        'X-Title': 'Code Explainer Pro'
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'openai/gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: `You are an expert developer.
-- Keep SAME language (${language})
-- Reduce code to 100–150 lines
-- Preserve functionality
-- Output ONLY code`
+            content: `Keep SAME language (${language}). Compress to 100-150 lines. Output only code.`
           },
           {
             role: 'user',
             content: code
           }
-        ],
-        temperature: 0.2
+        ]
       })
     });
 
@@ -45,4 +42,5 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error' });
-  }}
+  }
+}
