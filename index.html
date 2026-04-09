@@ -447,33 +447,48 @@
         let endpoint = `${API_BASE}/explain`;
         let body = { code, language: detectedSelect || 'unknown', mode };
 
-        if (feature === 'converter') {
-          endpoint = `${API_BASE}/convert`;
-          body = { code, from: langs.from || detectedSelect || 'unknown', to: langs.to || 'unknown' };
-        } else if (feature === 'optimizer') {
-          endpoint = `${API_BASE}/optimize`;
-          body = { code, language: detectedSelect || 'unknown', mode: 'optimize' };
-        } else if (feature === 'prompt-to-code') {
-          endpoint = `${API_BASE}/prompt-to-code`;
-          body = { prompt: code };
-        } else if (feature === 'half-fill') {
-          endpoint = `${API_BASE}/fill-code`;
-          body = { code, language: detectedSelect || 'unknown' };
-        } else if (feature === 'compressor') {
-          endpoint = `${API_BASE}/compress`;
-          body = { code, language: detectedSelect || 'unknown' };
-        } else {
-          endpoint = `${API_BASE}/explain`;
-          body = { code, language: detectedSelect || 'unknown', mode };
-        }
+       if (feature === 'converter') {
+  endpoint = `/api/convert`;
+  body = { code, from: langs.from || detectedSelect || 'unknown', to: langs.to || 'unknown' };
+
+} else if (feature === 'optimizer') {
+  endpoint = `/api/optimize`;
+  body = { code, language: detectedSelect || 'unknown', mode: 'optimize' };
+
+} else if (feature === 'prompt-to-code') {
+  endpoint = `/api/prompt-to-code`;
+  body = { prompt: code };
+
+} else if (feature === 'half-fill') {
+  endpoint = `/api/fill-code`;
+  body = { code, language: detectedSelect || 'unknown' };
+
+} else if (feature === 'compressor') {
+  endpoint = `/api/compress`;
+  body = { code, language: detectedSelect || 'unknown' };
+
+} else {
+  endpoint = `/api/explain`;
+  body = { code, language: detectedSelect || 'unknown', mode };
+}
 
         const res = await fetch(endpoint, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('token') || '') },
+          headers: { 
+  'Content-Type': 'application/json'
+},
           body: JSON.stringify(body)
         });
+const rawResponse = await res.text();
+console.log("RAW RESPONSE:", rawResponse);
 
-        const data = await res.json();
+let data;
+try {
+  data = JSON.parse(rawResponse);
+} catch (e) {
+  alert("SERVER RESPONSE:\n" + rawResponse);
+throw new Error("Server returned: " + rawResponse);
+}
         if (res.status >= 400) { setExplanation('❌ Error: ' + (data.error || data.message || JSON.stringify(data))); return; }
 
         const text = data.explanation || data.result || data.generated || JSON.stringify(data, null, 2);
